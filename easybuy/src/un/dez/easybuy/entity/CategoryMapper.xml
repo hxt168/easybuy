@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="un.dez.easybuy.entity.Category">
+  	<resultMap type="Category" id="CategoryMap" autoMapping="true">
+  		<association property="parentCategory" javaType="ParentCategory" >
+  			<result column="epcParentId" property="epcParentId"/>
+  			<result column="epcParentName" property="epcParentName"/>
+  		</association>
+  	</resultMap>
+  
+  	<insert id="add" parameterType="Category">
+  	insert into easybuy_product_category(epcName,epcParentId) values(#{epcName},#{parentCategory.epcParentId})
+  	</insert>
+  	
+  	<update id="update" parameterType="Category">
+  		update easybuy_product_category set epcName=#{epcName},epcParentId=#{parentCategory.epcParentId} where epcId=#{epcId}
+  	</update>
+  	
+  	<delete id="del" parameterType="int" >
+  		delete from easybuy_product_category where epcId=#{id}
+  	</delete>
+  
+  	<select id="loadById" parameterType="int" resultMap="CategoryMap">
+  		select * from easybuy_product_category as epc
+  		inner join easybuy_parent_category as ep
+  		on epc.epcParentId=ep.epcParentId
+  		 where epcId=#{id}
+  	</select>
+  	
+  	<select id="listByParentId" parameterType="int" resultType="Category">
+  		select * from easybuy_product_category where epcParentId=#{id}
+  	</select>
+  	
+  	<select id="listByCount" parameterType="int" resultType="Category">
+  		select * from easybuy_product_category limit 0,#{id}
+  	</select>
+  
+  </mapper>
