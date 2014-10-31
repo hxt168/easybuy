@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="un.dez.easybuy.entity.Product">
+  
+  <resultMap type="Product" id="productMap" autoMapping="true">
+  
+  <association property="category" javaType="Category">
+  	<id column="epcId" property="epcId"/>
+  	<result column="epcName" property="epcName"/>
+	  	<association property="parentCategory" javaType="ParentCategory">
+	  		<id column="epcParentId" property="epcParentId"/>
+	  		<result column="epcParentName" property="epcParentName"/>
+	  	</association>
+  </association>
+  
+  </resultMap>
+  <insert id="add" parameterType="Product">
+  insert into easybuy_product(epName,epDescription,epPrice,epStock,epcChildId,epFileName,epIsPromote,epSellAmount,epPromotePrice,epCreateTime,epProductNum) 
+  values(#{epName},#{epDescription},#{epPrice},#{epStock},#{category.epcId},#{fileName},#{epIsPromote},0,#{epPromotePrice},now(),#{epProductNum})
+  </insert>
+  
+  <update id="update" parameterType="Product">
+  	update easybuy_product 
+  	set epName=#{epName},epDescription=#{epDescription},epPrice=#{epPrice},epStock=#{epStock},epcChildId=#{category.epcId},epIsPromote=#{epIsPromote},epPromotePrice=#{epPromotePrice},epProductNum=#{epProductNum}
+  	<if test="fileName!=null">
+  	,epFileName=#{fileName}
+  	</if>
+  	where epId=#{epId}
+  </update>
+  <update id="updateSellAmount" parameterType="Product">
+  update easybuy_product set epSellAmount=epSellAmount+#{epSellAmount}
+  	where epId=#{epId}
+  </update>
+   <update id="subStock" parameterType="Product">
+  update easybuy_product set epStock=epStock-#{epStock}
+  	where epId=#{epId}
+  </update>
+  
+  <delete id="del" parameterType="int">
+  	delete from easybuy_product where epId=#{epId}
+  </delete>
+  
+  <select id="load" parameterType="int" resultMap="productMap">
+  	select * from easybuy_product ep
+  	inner join easybuy_product_category epc
+  	on ep.epcChildId=epc.epcId
+  	inner join easybuy_parent_category pc
+  	on epc.epcParentId=pc.epcParentId
+  	where epId=#{epId}
+  	
+  </select>
+  
+  <select id="listByCategoryId_page" parameterType="Map" resultType="Product">
+  select * from easybuy_product 
+  <if test="cid!=null">
+  where epcChildId=#{cid} 
+  </if>
+  order by epId desc 
+  limit #{pageOffset},#{pageSize}
+  </select>
+  
+  <select id="listByCategoryId_count" parameterType="Map" resultType="int">
+  select count(*) from easybuy_product 
+   <if test="cid!=null">
+  where epcChildId=#{cid} 
+  </if>
+  </select>
+  
+   <select id="listByParentId_page" parameterType="Map" resultType="Product">
+  select * from easybuy_product as ep
+  inner join easybuy_product_category as epc
+  on ep.epcChildId = epc.epcId
+   where epc.epcParentId=#{pid}
+   order by epId desc 
+   limit #{pageOffset},#{pageSize}
+  </select>
+  
+   <select id="listByParentId_count" parameterType="Map" resultType="int">
+  select count(*) from easybuy_product as ep
+  inner join easybuy_product_category as epc
+  on ep.epcChildId = epc.epcId
+   where epc.epcParentId=#{pid}
+  </select>
+  
+    <select id="listByPromote_page" parameterType="Map" resultType="Product">
+  select * from easybuy_product 
+   where epIsPromote =1
+   order by epId desc 
+   limit #{pageOffset},#{pageSize}
+  </select>
+  
+   <select id="listByPromote_count" resultType="int">
+  select count(*) from easybuy_product 
+   where epIsPromote =1
+  </select>
+  
+   <select id="listByPromoteAndCount" parameterType="int" resultType="Product">
+  select * from easybuy_product 
+   where epIsPromote =1
+   order by epId desc 
+   limit 0,#{count}
+  </select>
+  
+  <select id="listOrderBySellAmount" parameterType="int" resultType="Product">
+  select * from easybuy_product 
+   order by epSellAmount desc 
+   limit 0,#{size}
+  </select>
+  
+  
+  
+  </mapper>

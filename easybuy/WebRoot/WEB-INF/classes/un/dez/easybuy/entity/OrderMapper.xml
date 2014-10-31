@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="un.dez.easybuy.entity.Order">
+    <!-- 从order正向查，会发生分页情况不一致问题 -->
+  <resultMap type="Order" id="OrderMap">
+  	<id column="eoId" property="eoId"/>  
+  	<result column="eoRealName" property="eoRealName"/>  
+  	<result column="eoUserAddress" property="eoUserAddress"/>  
+  	<result column="eoCreateTime" property="eoCreateTime"/>  
+  	<result column="eoCost" property="eoCost"/>  
+  	<result column="eoStatus" property="eoStatus"/>  
+  	<result column="eoType" property="eoType"/>  
+  	<result column="eoUserPhone" property="eoUserPhone"/>  
+  	
+  	<association property="eoUser" javaType="User" resultMap="UserMap" >
+  	</association>
+  	<collection property="list" ofType="Detail" resultMap="detailMap">
+  	
+  	</collection>
+  	
+  </resultMap>
+  <!-- 为detail反向查调用 -->
+   <resultMap type="Order" id="OrderMap2">
+  	<id column="eoId" property="eoId"/>  
+  	<result column="eoRealName" property="eoRealName"/>  
+  	<result column="eoUserAddress" property="eoUserAddress"/>  
+  	<result column="eoCreateTime" property="eoCreateTime"/>  
+  	<result column="eoCost" property="eoCost"/>  
+  	<result column="eoStatus" property="eoStatus"/>  
+  	<result column="eoType" property="eoType"/>  
+  	<result column="eoUserPhone" property="eoUserPhone"/>  
+  	
+  	<association property="eoUser" javaType="User" resultMap="UserMap" >
+  	</association>
+  	
+  </resultMap>
+ 
+  <!-- 从order正向查，没有分页情况不一致问题 -->
+    <resultMap type="Order" id="OrderMap3">
+  	<id column="eoId" property="eoId"/>  
+  	<result column="eoRealName" property="eoRealName"/>  
+  	<result column="eoUserAddress" property="eoUserAddress"/>  
+  	<result column="eoCreateTime" property="eoCreateTime"/>  
+  	<result column="eoCost" property="eoCost"/>  
+  	<result column="eoStatus" property="eoStatus"/>  
+  	<result column="eoType" property="eoType"/>  
+  	<result column="eoUserPhone" property="eoUserPhone"/>  
+  	
+  	<association property="eoUser" javaType="User" resultMap="UserMap" >
+  	</association>
+  	<collection property="list" ofType="Detail" column="eoId" select="un.dez.easybuy.entity.Order.detalLoadByOrderId" />
+
+  </resultMap>
+  
+  <resultMap type="User" id="UserMap">
+  	<id column="euUserId" property="euUserId"/>  		
+  		<result column="euUserName" property="euUserName"/>
+  		<result column="euPassword" property="euPassword"/>
+  		<result column="euRealName" property="euRealName"/>
+  		<result column="euSex" property="euSex"/>	
+  		<result column="euBirthday" property="euBirthday"/>
+  		<result column="euIdentityCode" property="euIdentityCode"/>
+  		<result column="euEmail" property="euEmail"/>
+  		<result column="euMobile" property="euMobile"/>
+  		<result column="euAddress" property="euAddress"/>
+  		<result column="euStatus" property="euStatus"/>
+  </resultMap>
+  
+  <resultMap type="Detail" id="detailMap">
+  		<id column="eodId" property="eodId"/>
+  		<result column="eoId" property="eoId"/>
+  		<result column="eodQuantity" property="eodQuantity"/>
+  		<result column="eodCost" property="eodCost"/>
+  		<association property="product" javaType="Product" resultMap="productMap">
+  		</association>
+  </resultMap>
+  <!-- 根据detail商品详情查询时的map，防止分页条数不一致 -->
+   <resultMap type="Detail" id="detailMap2">
+  		<id column="eodId" property="eodId"/>
+  		<result column="eoId" property="eoId"/>
+  		<result column="eodQuantity" property="eodQuantity"/>
+  		<result column="eodCost" property="eodCost"/>
+  		<association property="order" javaType="Order" resultMap="OrderMap2">
+  		</association>
+  </resultMap>
+  
+  
+  <resultMap type="Product" id="productMap">
+  	<id column="epId" property="epId"/>
+  	<result column="epName" property="epName"/>
+  	<result column="epDescription" property="epDescription"/>
+  	<result column="epPrice" property="epPrice"/>
+  	<result column="epStock" property="epStock"/>
+  	<result column="epFileName" property="epFileName"/>
+  	<result column="epIsPromote" property="epIsPromote"/>
+  	<result column="epSellAmount" property="epSellAmount"/>
+  	<result column="epPromotePrice" property="epPromotePrice"/>
+  	<result column="epCreateTime" property="epCreateTime"/>
+  	<result column="epProductNum" property="epProductNum"/>
+  	
+  </resultMap>
+ <insert id="addOrder" parameterType="Order" useGeneratedKeys="true" keyProperty="eoId"> 
+ 	insert into easybuy_order(eoUserId,eoRealName,eoUserAddress,eoCreateTime,eoCost,eoStatus,eoType,eoUserPhone) values(#{eoUser.euUserId},#{eoRealName},#{eoUserAddress},now(),#{eoCost},#{eoStatus},#{eoType},#{eoUserPhone})
+ </insert>
+
+ <insert id="addDetail" parameterType="Detail" >
+ 	insert into easybuy_order_detail(eoId,epId,eodQuantity,eodCost) values(#{eoId},#{product.epId},#{eodQuantity},#{eodCost})
+ </insert>
+ 
+ <update id="update" parameterType="Order">
+ update easybuy_order set eoRealName=#{eoRealName},eoUserAddress=#{eoUserAddress},eoStatus=#{eoStatus},eoType=#{eoType},eoUserPhone=#{eoUserPhone}
+ where eoId =#{eoId}
+ </update>
+ 
+ <delete id="delOrder" parameterType="int">
+ delete from easybuy_order where eoId=#{eoid}
+ </delete>
+ 
+ <delete id="delDetail" parameterType="int">
+ delete from easybuy_order_detail where eoid =#{eoid}
+ </delete>
+  
+  <select id="allOrder_page" parameterType="Map" resultType="Order">
+  	select * from easybuy_order
+  	<where>
+  		1=1
+  		<if test="eoRealName!=null">
+  			and eoRealName like '%${eoRealName}%'
+  		</if>
+  		<if test="eoStatus!=null">
+  			and eoStatus =#{eoStatus}
+  		</if>
+  		<if test="eoUserAddress!=null">
+  			and eoUserAddress like '%${eoUserAddress}%'
+  		</if>
+  		<if test="date1!=null">
+  			and datediff(eoCreateTime,#{date1})>=0
+  		</if>
+  		<if test="date2!=null">
+  			and datediff(eoCreateTime,#{date2}) &lt;=0
+  		</if>
+  	</where>
+  	 order by eoId desc 
+  	 limit #{pageOffset},#{pageSize}
+  </select>
+  
+  <select id="allOrder_count" parameterType="Map" resultType="int">
+  	select count(*) from easybuy_order
+  	<where>
+  		1=1
+  		<if test="eoRealName!=null">
+  			and eoRealName like '%${eoRealName}%'
+  		</if>
+  		<if test="eoStatus!=null">
+  			and eoStatus =#{eoStatus}
+  		</if>
+  		<if test="eoUserAddress!=null">
+  			and eoUserAddress like '%${eoUserAddress}%'
+  		</if>
+  		<if test="date1!=null">
+  			and datediff(eoCreateTime,#{date1})>=0
+  		</if>
+  		<if test="date2!=null">
+  			and datediff(eoCreateTime,#{date2}) &lt;=0
+  		</if>
+  	</where>
+  </select>
+  
+
+  
+  <select id="loadById" parameterType="int" resultMap="OrderMap">
+  	select * from easybuy_order eo
+  	inner join easybuy_user eu
+  	on eo.eoUserId=eu.euUserId
+  	inner join easybuy_order_detail eod
+  	on eo.eoId=eod.eoId
+  	inner join easybuy_product ep
+  	on eod.epId =ep.epId
+  	where eo.eoId=#{id}
+  </select>
+  
+  <select id="detalLoadByOrderId" parameterType="int" resultMap="detailMap">
+  	select * from easybuy_order_detail eod
+  	inner join easybuy_product ep
+  	on eod.epId =ep.epId
+  	where eod.eoId=#{eoId}
+  </select>
+  
+   <select id="listByUserId_page" parameterType="Map" resultType="Order">
+  	select * from easybuy_order
+  	where eoUserId =#{eoUserId} 
+  	 order by eoId desc 
+  	 limit #{pageOffset},#{pageSize}
+  </select>
+  
+  <select id="listByUserId_count" parameterType="Map" resultType="int">
+  	select count(*) from easybuy_order
+  	where eoUserId =#{eoUserId}
+  </select>
+  
+  <select id="listByCount" parameterType="int" resultMap="OrderMap3">
+  	select * from easybuy_order eo
+  	inner join easybuy_user eu
+  	on eo.eoUserId=eu.euUserId
+  	order by eo.eoId desc
+  	limit 0,#{count}
+  </select>
+  
+  <select id="detailListByProductId_page" parameterType="Map" resultMap="detailMap2">
+  	select * from easybuy_order_detail eod
+  	inner join easybuy_order eo
+  	on eo.eoId=eod.eoId
+	inner join easybuy_user eu
+  	on eo.eoUserId=eu.euUserId
+  	where eod.epId=#{pid}
+  	order by eod.eodId desc
+  	 limit #{pageOffset},#{pageSize}
+  </select>
+  
+   <select id="detailListByProductId_count" parameterType="Map" resultType="int">
+  	select count(*) from easybuy_order_detail eod
+  	where eod.epId=#{pid}
+  </select>
+  
+  </mapper>

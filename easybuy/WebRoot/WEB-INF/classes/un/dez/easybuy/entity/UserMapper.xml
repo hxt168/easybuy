@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="un.dez.easybuy.entity.User">
+  <select id="search" parameterType="Map" resultType="User">
+  select * from easybuy_user where euUserName=#{euUserName} and euPassword=#{euPassword}
+  </select>
+   <select id="searchName" parameterType="Map" resultType="User">
+  select * from easybuy_user where euUserName=#{euUserName}
+  </select>
+  <select id="user_page" resultType="User">
+  select * from easybuy_user order by euUserId desc limit #{pageOffset},#{pageSize};
+  </select>
+  <select id="user_count" parameterType="Map" resultType="int">
+  select count(*) from easybuy_user
+  </select>
+  <delete id="del" parameterType="int">
+  delete from easybuy_user where euUserId=#{euUserId}
+  </delete> 
+ <insert id="add" parameterType="User">
+  insert into easybuy_user(euUserName,euRealName,euPassword,euSex,euBirthday,euIdentityCode,euEmail,euMobile,euAddress,euStatus) values(#{euUserName},#{euRealName},#{euPassword},#{euSex},#{euBirthday},#{euIdentityCode},#{euEmail},#{euMobile},#{euAddress},#{euStatus})
+</insert>
+<update id="update" parameterType="User">
+update easybuy_user set euRealName=#{euRealName},
+<if test="euPassword!=null">
+euPassWord=#{euPassword},
+</if>
+<if test="euStatus!=0">
+euStatus=#{euStatus},
+</if>
+euSex=#{euSex},euBirthday=#{euBirthday},euEmail=#{euEmail},euMobile=#{euMobile},euAddress=#{euAddress},euEmail=#{euEmail} where euUserId=#{euUserId} 
+</update>
+<select id="searchById" parameterType="int" resultType="User">
+select * from easybuy_user where euUserId=#{euUserId};
+</select>
+<update id="updatePwd" parameterType="User">
+update easybuy_user set euPassword=#{euPassword} where euUserId=#{euUserId};
+</update>
+ </mapper>
